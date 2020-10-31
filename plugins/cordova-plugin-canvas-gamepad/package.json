@@ -1,0 +1,79 @@
+{
+  "_from": "cordova-plugin-canvas-gamepad",
+  "_id": "cordova-plugin-canvas-gamepad@0.1.1",
+  "_inBundle": false,
+  "_integrity": "sha1-25cAYqrU/ZRTkd441Qq5iae/kdg=",
+  "_location": "/cordova-plugin-canvas-gamepad",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cordova-plugin-canvas-gamepad",
+    "name": "cordova-plugin-canvas-gamepad",
+    "escapedName": "cordova-plugin-canvas-gamepad",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-canvas-gamepad/-/cordova-plugin-canvas-gamepad-0.1.1.tgz",
+  "_shasum": "db970062aad4fd945391de38d50ab989a7bf91d8",
+  "_spec": "cordova-plugin-canvas-gamepad",
+  "_where": "C:\\Users\\Wai\\Desktop\\appgame",
+  "author": {
+    "name": "eugene andruszczenko",
+    "email": "eugene.andruszczenko@gmail.com",
+    "url": "http://32teeth.org"
+  },
+  "bugs": {
+    "url": "https://github.com/32teeth/cordova-plugin-canvas-gamepad/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-canvas-gamepad",
+    "platforms": [
+      "firefoxos",
+      "tizen",
+      "android",
+      "amazon-fireos",
+      "ubuntu",
+      "ios",
+      "blackberry10",
+      "wp7",
+      "wp8",
+      "windows8",
+      "windows",
+      "browser"
+    ]
+  },
+  "deprecated": false,
+  "description": "Cordova Canvas Gamepad Plugin",
+  "homepage": "https://github.com/32teeth/cordova-plugin-canvas-gamepad#readme",
+  "keywords": [
+    "cordova",
+    "gamepad",
+    "ecosystem:cordova",
+    "cordova-firefoxos",
+    "cordova-tizen",
+    "cordova-android",
+    "cordova-amazon-fireos",
+    "cordova-ubuntu",
+    "cordova-ios",
+    "cordova-blackberry10",
+    "cordova-wp7",
+    "cordova-wp8",
+    "cordova-windows8",
+    "cordova-windows",
+    "cordova-browser"
+  ],
+  "license": "Apache 2.0",
+  "name": "cordova-plugin-canvas-gamepad",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/32teeth/cordova-plugin-canvas-gamepad.git"
+  },
+  "version": "0.1.1"
+}
