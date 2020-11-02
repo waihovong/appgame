@@ -7,18 +7,24 @@
     "files": {}
   },
   "installed_plugins": {
-    "cordova-plugin-whitelist": {
+    "cordova-plugin-canvas-gamepad": {
       "PACKAGE_NAME": "com.example.hello"
     },
     "cordova-plugin-screen-orientation": {
       "PACKAGE_NAME": "com.example.hello"
     },
-    "cordova-plugin-canvas-gamepad": {
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "com.example.hello"
+    },
+    "cordova-plugin-advanced-http": {
       "PACKAGE_NAME": "com.example.hello"
     }
   },
   "dependent_plugins": {
     "es6-promise-plugin": {
+      "PACKAGE_NAME": "com.example.hello"
+    },
+    "cordova-plugin-file": {
       "PACKAGE_NAME": "com.example.hello"
     }
   }
