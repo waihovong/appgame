@@ -1,14 +1,11 @@
+const { fromEvent, from, of } = rxjs;
+const { map, auditTime } = rxjs.operators;  
+
 let canvas;
 let context;
 
-var map = [
+var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -16,43 +13,51 @@ var map = [
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-
 ];
+
+player_colors = ["blue", "red", "pink", "yellow", "green", "grey", ""]
+
 canvas = document.getElementById('canvas-2');
 context = canvas.getContext('2d');
 
 let power_x;
 let power_y;
 
-var tileH = canvas.height;
-var tileW = canvas.width;
+var tileH = canvas.height / 41;
+var tileW = canvas.width / 41;
 
 var player =  {
     x: 600,
@@ -62,10 +67,13 @@ var player =  {
     jump: true,
     height: 20,
     width: 20,
-    onGround: false,
+    onGround: true,
     invincible: false,
+    flight: false
     
 };
+
+var numPlayers = [];
 
 var keypress = {
     up: false,
@@ -87,34 +95,51 @@ var moveLeft = false;
 
 var boundry = false;
 
+var buttonDown = false;
+
 window.onload = init;
 
+var socket = io.connect('http://' +window.localStorage.getItem("ip") + ':3000');
+
+function stream() {
+    if(socket.connected) {
+        const playerObservable = of(player);
+        playerObservable.subscribe(function(playerObj) {
+            // console.log(playerObj);
+            socket.emit('playerObject', JSON.stringify(playerObj));
+        });
+    }
+}
+
+fromEvent(socket,'players').pipe(
+    map((x) => JSON.parse(x))).subscribe(function(mice) {
+        numPlayers = mice;
+});
+
+
 function init(){
-
-
-    // Start the first frame request
-
     window.requestAnimationFrame(gameLoop);
 }
 
 function createPlayer() {
     context.fillStyle = "#FF0000";
     context.fillRect(player.x, player.y, player.width, player.height);
+
 }
 
 function renderMap() {
-    for(var x = 0; x < map.length; x++) {
-        for(var y = 0; y < map[x].length; y++) {
-            if(map[x][y] !== 0) {
+    for(var x = 0; x < map_game.length; x++) {
+        for(var y = 0; y < map_game[x].length; y++) {
+            if(map_game[x][y] !== 0) {
                 context.fillStyle= "#000000";
                 context.fillRect(
-                    y * 20, x * 20, 20, 20
+                    y * tileW, x * tileH, 20, 20
                 );
             }
-            if(map[x][y] == 2) {
+            if(map_game[x][y] == 2) {
                 context.fillStyle = "#AEF172";
                 context.fillRect(
-                    y * 20, x * 20, 20, 20
+                    y * tileW, x * tileH, 20, 20
                 );
             }
         }
@@ -125,19 +150,17 @@ function showPower(min, max) {
     return Math.round(Math.random() * (max - min) / 10) * min;
 }
 
-
-
 function generatePowerUp() {
     power_x = showPower(100, canvas.width / 2);
     power_y = showPower(100, canvas.height / 2);
-    context.fillStyle = 'yellow'
+    context.fillStyle = 'blue'
     context.fillRect(power_x, power_y, 10, 10)
 }
 
 function insertPowerUp() {
     // console.log('inserting power up');
     
-    context.fillStyle = 'yellow';
+    context.fillStyle = 'blue';
     context.fillRect(power_x, power_y, 10, 10);
 }
 
@@ -160,6 +183,83 @@ function keyDown(e) {
             break;
     }
 }
+
+
+function leftMovement() {
+    buttonDown = true;
+    moveLeft = true;
+    console.log('moving left');
+    // player.xVel = -1;
+}
+
+var mouseDownR;
+var mouseDownL;
+var mouseDownJ;
+
+var rightM = document.getElementById('rightMovement');
+var leftM = document.getElementById('leftMovement');
+var jumpM = document.getElementById('jumpMovement');
+
+
+function rightMovement() {
+    mouseDownR = requestAnimationFrame(whileMouseDownR);
+}
+
+function leftMovement() {
+    mouseDownL = requestAnimationFrame(whileMouseDownL);
+}
+
+function jumpMovement() {
+    mouseDownJ = requestAnimationFrame(whileMouseDownJ);
+}
+
+function whileMouseDownR() {
+
+    player.xVel = 2;
+    mouseDownR = requestAnimationFrame(whileMouseDownR);
+}
+
+function whileMouseDownL() {
+    player.xVel = -2;
+    mouseDownL = requestAnimationFrame(whileMouseDownL);
+
+}
+
+function whileMouseDownJ() {
+    player.yVel = -5;
+    mouseDownJ = requestAnimationFrame(whileMouseDownJ);
+}
+
+function stopRight(){
+    cancelAnimationFrame(mouseDownR);
+}
+
+function stopLeft() {
+    cancelAnimationFrame(mouseDownL);
+}
+
+function stopJump() {
+    cancelAnimationFrame(mouseDownJ);
+}
+
+rightM.addEventListener('mousedown', rightMovement);
+rightM.addEventListener('mouseup', stopRight);
+
+rightM.addEventListener('touchstart', rightMovement);
+rightM.addEventListener('touchend', stopRight);
+
+leftM.addEventListener('mousedown', leftMovement);
+leftM.addEventListener('mouseup', stopLeft);
+
+leftM.addEventListener('touchstart', leftMovement);
+leftM.addEventListener('touchend', stopLeft);
+
+jumpM.addEventListener('mousedown', jumpMovement);
+jumpM.addEventListener('mouseup', stopJump);
+
+jumpM.addEventListener('touchstart', jumpMovement);
+jumpM.addEventListener('touchend', stopJump);
+
 
 function keyUp(e) {
     switch (e.keyCode) {
@@ -185,96 +285,50 @@ var playerSpeedY = document.getElementById('speedY');
 
 // console.log(player.width);
 
+
 function gameLoop(){
     var x = player.x
     var y = player.y
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if(moveLeft) {
-        player.xVel =-2;
+    console.log('number of players in the game', numPlayers.length);
+
+    for(var i = 0; i < numPlayers.length; i++) {
+        context.fillStyle = player_colors[i];
+        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].width, numPlayers[i].height);
+        // window.requestAnimationFrame(gameLoop);
     }
 
-    if(moveRight) {
-        player.xVel = 2
-    }
+    if(moveLeft) { player.xVel -= 2; }
+    
+    if(moveRight) { player.xVel += 2; }
+
+    moveLeft = false;
+    moveRight = false;
 
     player.x += player.xVel;
     player.y += player.yVel;
     player.yVel += gameGravity * 0.9;
     player.xVel *= friction;
 
-    // if(grav) {
-    //     player.xVel *= 0.1;
-    // } else {
-    //     player.yVel = 1;
-    // }
-
-    grav = false;
+    grav = true;
     var playerPosX = player.x;
     var playerPosY = player.y;
 
-    if(player.x < 0) {
-        player.x = 0;
-    }
+    if(player.x < 0) { player.x = 0; }
 
-    if(player.y < 0) {
-        player.y = 0;
-    }
+    if(player.y < 0) { player.y = 0; }
 
-    if(player.x > canvas.width - player.width) {
-        // console.log('hitting ground');        
-        player.x = canvas.width - player.width;
-    }
+    if(player.x > canvas.width - player.width) { player.x = canvas.width - player.width; }
     
-    if(player.y > canvas.height - player.height) {
-        // console.log('hit ground')
-        player.y = canvas.height - player.height;
-
-    }
-
-    // for(var col = 0; col < map.length; col++) {
-    //     for(var row = 0; row < map[col].length; row++) {
-    //         if(map[col][row] === 2) {
-    //             grav = true;
-    //             if(player.x > map[row].x && player.x < map[row].x + 20 && player.y > map[col].y && player.y < map[col].y + 20){
-    //                 console.log('collision');
-    //             }
-    //         }
-    //     }
-    // }
+    if(player.y > canvas.height - player.height) { player.y = canvas.height - player.height; }
 
     playerPosDisplayX.innerHTML = "X: " + playerPosX;
     playerPosDisplayY.innerHTML = "Y: " + playerPosY;
-
-    // playerSpeedX.innerHTML = "X speed: " + player.xVel;
-    // playerSpeedY.innerHTML = "Y speed: " + player.yVel;
-
-    // for(var col = 0; col < map.length; col++) {
-    //     for(var row = 0; row < map[col].length; row++) {
-    //         if (map[col][row] == 0) {
-                
-    //             // console.log(map[col]);
-    //             if(playerPosX + player.width >= map[col] && playerPosX <= map[col] + map[row] && playerPosY + player.width >= map[col] && playerPosY <= map[col] + map[row]) {
-    //                 player.yVel = 0;
-    //                 grav = true;
-    //                 playerPosY = map[col] - player.yVel;
-    //             }
-    //         } if(map[row][col] == 1) {
-    //             grav = true;
-    //             if((player.xVel + playerPosX) == map[row]) {
-    //                 console.log('collision with wall');
-    //                 player.yVel = 0;
-    //             }
-    //         } 
-    //     }
-    // }
     
-    createPlayer();
-    // renderMap();
-    // insertPowerUp();
-    generatePowerUp();
-    
-
+    // createPlayer();
+    renderMap();
+    stream();
     window.requestAnimationFrame(gameLoop);
     
 }
@@ -284,9 +338,9 @@ document.addEventListener("keyup", keyUp);
 
 function detectWall() {
     // grav = true;
-    for(var y = 0; y < map.length; y++) {
-        for(var x = 0; x < map[y].length; x++) {
-            if(map[y][x] == 0){
+    for(var y = 0; y < map_game.length; y++) {
+        for(var x = 0; x < map_game[y].length; x++) {
+            if(map_game[y][x] == 0){
 
                 var tileX = x*tileW;
                 var tileY = y*tileH;
@@ -295,7 +349,7 @@ function detectWall() {
                     player.yVel = 0;
                     player.y = tileY - player.yVel;
                 }
-            } else if(map[y][x] == 1) {
+            } else if(map_game[y][x] == 1) {
                 var tileX = x * tileW;
                 grav = true;
                 if((player.xVel + player.x) == tileX) {
@@ -319,3 +373,23 @@ function detectCollision(obj1, obj2) {
     }
     return false
 }
+
+    // for(var col = 0; col < map_game.length; col++) {
+    //     for(var row = 0; row < map_game[col].length; row++) {
+    //         if (map_game[col][row] == 0) {
+                
+    //             // console.log(map_game[col]);
+    //             if(playerPosX + player.width >= map_game[col] && playerPosX <= map_game[col] + map_game[row] && playerPosY + player.width >= map_game[col] && playerPosY <= map_game[col] + map_game[row]) {
+    //                 player.yVel = 0;
+    //                 grav = true;
+    //                 playerPosY = map_game[col] - player.yVel;
+    //             }
+    //         } if(map_game[row][col] == 1) {
+    //             grav = true;
+    //             if((player.xVel + playerPosX) == map_game[row]) {
+    //                 console.log('collision with wall');
+    //                 player.yVel = 0;
+    //             }
+    //         } 
+    //     }
+    // }

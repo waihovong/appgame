@@ -117,3 +117,21 @@ h1 {
 #canvas-2 {
     background-color: azure;
 }
+
+
+.controls {
+    display: flex;
+    /* justify-content: space-around; */
+}
+
+.left_controls {
+    display: flex;
+    align-self: flex-end;
+}
+
+.right_controls {
+    display: flex;
+    align-self: flex;
+    flex-direction: row;
+}
+

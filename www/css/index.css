@@ -109,11 +109,26 @@ h1 {
     }
 }
 
-
-#canvas {
-    background-color: pink;
-}
-
 #canvas-2 {
     background-color: azure;
+    height: 100%:
+    width: 100%;
 }
+
+
+.controls {
+    display: flex;
+    /* justify-content: space-around; */
+}
+
+.left_controls {
+    display: flex;
+    align-self: flex-end;
+}
+
+.right_controls {
+    display: flex;
+    align-self: flex;
+    flex-direction: row;
+}
+
