@@ -109,19 +109,13 @@ h1 {
     }
 }
 
-
-#canvas {
-    background-color: pink;
-}
-
 #canvas-2 {
     background-color: azure;
 }
 
-
 .controls {
-    display: flex;
-    /* justify-content: space-around; */
+    display: grid;
+    grid-template-columns: 10% 10%;
 }
 
 .left_controls {
