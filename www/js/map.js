@@ -33,7 +33,7 @@ var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-player_colors = ["blue", "red", "pink", "yellow", "green", "grey", ""]
+player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
 
 canvas = document.getElementById('canvas-2');
 context = canvas.getContext('2d');
@@ -264,7 +264,6 @@ var playerPosDisplayY = document.getElementById('posY');
 var playerSpeedX = document.getElementById('speedX');
 var playerSpeedY = document.getElementById('speedY');
 
-// console.log(player.width);
 
 
 function gameLoop(){
@@ -274,7 +273,7 @@ function gameLoop(){
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    console.log('number of players in the game', numPlayers.length);
+    // console.log('number of players in the game', numPlayers.length);
 
     for(var i = 0; i < numPlayers.length; i++) {
         context.fillStyle = player_colors[i];
@@ -303,8 +302,16 @@ function gameLoop(){
     if(player.x > canvas.width - player.width - 20) { player.x = canvas.width - player.width - 20; }
     
     if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
-    
-    // createPlayer();
+
+
+    // for(var col = 0; col < map_game.length; col++) {
+    //     for(var row = 0; row < map_game[col].length; row++) {
+    //         // console.log(map_game[col][row]);
+    //     }
+    // }
+
+
+
     renderMap();
     stream();
     window.requestAnimationFrame(gameLoop);

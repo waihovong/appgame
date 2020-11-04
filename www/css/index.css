@@ -114,13 +114,17 @@ h1 {
 }
 
 .controls {
-    display: grid;
-    grid-template-columns: 10% 10%;
+    display: flex;
 }
 
 .left_controls {
     display: flex;
     align-self: flex-end;
+    margin-right: 100px;
+}
+
+#leftMovement {
+    margin-right: 20px;
 }
 
 .right_controls {
@@ -129,3 +133,6 @@ h1 {
     flex-direction: row;
 }
 
+button {
+    padding: 15px;
+}
