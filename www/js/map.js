@@ -33,7 +33,7 @@ var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-var platform = [];
+// var platform = [];
 
 player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
 
@@ -134,17 +134,12 @@ function renderMap() {
             if(map_game[x][y] == 2) {
                 context.fillStyle = "#AEF172";
                 context.fillRect(y * 20, x * 20, 20, 20);
-                platform.push(map_game);
             }
         }
     }
 }
 
-console.log(platform);
-
 function generatePowerUp() {
-    // power_x = showPo(50, 250);
-    // power_y = showPower(200, 250);
     context.fillStyle = 'orange'
     context.fillRect(100, 370, 20, 20)
 }
@@ -167,7 +162,7 @@ function keyDown(e) {
                 onGround = false;
             }
             player.jump = false;
-            // console.log('jump', player.jump);
+            console.log('jump', player.jump);
             break;
         case 39:
             console.log('moving right');
@@ -377,8 +372,9 @@ function gameLoop(){
     }
 
     if ((player.x >= 100) && (player.x <= 120) && (player.y >= 370) && (player.y <= 390)) {
-            console.log('collision with speed');
+            console.log('collision');
     }
+
     window.requestAnimationFrame(gameLoop);
     
 }
@@ -400,4 +396,4 @@ function checkPlatform(){
             }
         }
     }
-}   
+}
