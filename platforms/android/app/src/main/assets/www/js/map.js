@@ -33,7 +33,7 @@ var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-player_colors = ["blue", "red", "pink", "yellow", "green", "grey", ""]
+player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
 
 canvas = document.getElementById('canvas-2');
 context = canvas.getContext('2d');
@@ -46,8 +46,10 @@ var tileW = canvas.width % 41;
 
 
 var player =  {
+    id: null,
     x: 80,
     y: 40,
+    size: 20,
     xVel: 0,
     yVel: 0,
     jump: true,
@@ -100,6 +102,13 @@ function stream() {
 fromEvent(socket,'players').pipe(
     map((x) => JSON.parse(x))).subscribe(function(mice) {
         numPlayers = mice;
+        // console.log (numPlayers);
+});
+
+fromEvent(socket,'newPlayerID').pipe(
+    map((x) => JSON.parse(x))).subscribe(function(playerInit) {
+        player.id = playerInit;
+        console.log(playerInit);
 });
 
 
@@ -264,7 +273,6 @@ var playerPosDisplayY = document.getElementById('posY');
 var playerSpeedX = document.getElementById('speedX');
 var playerSpeedY = document.getElementById('speedY');
 
-// console.log(player.width);
 
 
 function gameLoop(){
@@ -274,13 +282,67 @@ function gameLoop(){
 
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    console.log('number of players in the game', numPlayers.length);
+    // console.log('number of players in the game', numPlayers.length);
 
     for(var i = 0; i < numPlayers.length; i++) {
         context.fillStyle = player_colors[i];
-        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].width, numPlayers[i].height);
-        // window.requestAnimationFrame(gameLoop);
+        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
+        //   var ax2 = a.x + a.w;
+//   var ay2 = a.y + a.h;
+//   var bx2 = b.x + b.w;
+//   var by2 = b.y + b.h;
+
+//   var xInRange = (a.x >= b.x && a.x <= bx2 || ax2 >= b.x && ax2 <= bx2);
+//   var yInRange = (a.y >= b.y && a.y <= by2 || ay2 >= b.y && ay2 <= by2);
+//   // Clockwise hit from top 1,2,3,4 or -1
+
+//   if (ay2 > b.y && a.y < by2 && xInRange) return 1; // A hit the top of B
+//   if (a.x < bx2 && ax2 > b.x && yInRange) return 2; // A hit the right of B
+//   if (a.y < by2 && ay2 > b.y && xInRange) return 3; // A hit the bottom of B
+//   if (ax2 > b.x && a.x < bx2 && yInRange) return 4; // A hit the right of B
+//   return -1; // nohit
+// }
     }
+
+
+
+for(var i = 0; i < numPlayers.length; i++) {
+
+        // // window.requestAnimationFrame(gameLoop);
+        // if ((player.y + player.size) > numPlayers[i].x && player.y < (numPlayers[i].y + numPlayers[i].size) && player.x >= numPlayers[i].x && player.x <= (numPlayers[i].x + numPlayers[i].size || (player.x + player.size) >= numPlayers[i].x && (player.x + player.size) <= (numPlayers[i].x + numPlayers[i].size)) ) {
+        //     console.log('hello this is a collision player hit TOP of opponent');
+        // }
+        // if(player.x < (numPlayers[i].x + numPlayers[i].size) && (player.x + player.size) > numPlayers[i].x && player.y >= numPlayers[i].y && player.y <= (numPlayers[i].y + numPlayers[i].size || (player.y + player.size) >= numPlayers[i].y && (player.y + player.size) <= (numPlayers[i].y + numPlayers[i].size)) ) {
+        //     console.log('this is collision player hit RIGHT of opponent');
+        // }
+        // if(player.y < (numPlayers[i].y + numPlayers[i].size) && player.y + player.size > numPlayers[i].y && player.x >= numPlayers[i].x && player.x <= numPlayers[i].x + numPlayers[i].size || (player.x + player.size) >= numPlayers[i].x && (player.x + player.size) <= (numPlayers[i].x + numPlayers[i].size)) {
+        //     console.log('this is collision player hit BOTTOM of opponent');
+        // }
+        // if((player.x + player.size) > numPlayers[i].x && player.x < (numPlayers[i].x + numPlayers[i].size && player.y >= numPlayers[i].y && player.y <= numPlayers[i].y + numPlayers[i].size || (player.y + player.size) >= numPlayers[i].y && (player.y + player.size) <= (numPlayers[i].y + numPlayers[i].size))) {
+        //     console.log('this is collision player hit LEFT of opponent');
+        // }
+
+        if (player.id == numPlayers[i].id)
+        {
+            continue;
+        }
+
+        var playerLocationX = player.x; 
+        var playerLocationY = player.y;
+
+        var opPlayerBoundryX1 = numPlayers[i].x - player.size;
+        var opPlayerBoundryX2 = numPlayers[i].x + numPlayers[i].size;
+
+        var opPlayerBoundryY1 = numPlayers[i].y - player.size;
+        var opPlayerBoundryY2 = numPlayers[i].y + numPlayers[i].size;
+
+            // console.log(playerLocationX, playerLocationY, numPlayers[i].x, numPlayers[i].y);
+        if ((playerLocationX >= opPlayerBoundryX1) && (playerLocationX <= opPlayerBoundryX2) && (playerLocationY >= opPlayerBoundryY1) && (playerLocationY <= opPlayerBoundryY2)) {
+            // console.log("collision: ", playerLocationX, playerLocationY, opPlayerBoundryX1, opPlayerBoundryX2, opPlayerBoundryY1, opPlayerBoundryY2);
+        }
+}
+
+
 
     if(moveLeft) { player.xVel -= 2; }
     
@@ -303,8 +365,60 @@ function gameLoop(){
     if(player.x > canvas.width - player.width - 20) { player.x = canvas.width - player.width - 20; }
     
     if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
-    
-    // createPlayer();
+
+
+    // for(var col = 0; col < map_game.length; col++) {
+    //     for(var row = 0; row < map_game[col].length; row++) {
+    //         // console.log(map_game[col][row]);
+    //     }
+    // }
+    // var topLeft = player.size;
+    // var topRight;
+    // var bottomLeft;
+    // var bottomRight;
+
+    // player = a
+    // numPlayers = b
+
+    // if ((player.y + player.size) && player.y < (numPlayers.y + numPlayers.size) && player.x >= numPlayers.x && player.x <= (numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)) ) {
+    //     console.log('hello this is a collision player hit TOP of opponent');
+    // }
+    // if(player.x < (numPlayers.x + numPlayers) && (player.x + player.size) > numPlayers.x && player.y >= numPlayers.y && player.y <= (numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size)) ) {
+    //     console.log('this is collision player hit RIGHT of opponent');
+    // }
+    // if(player.y < (numPlayers.y + numPlayers.size) && player.y + player.size > numPlayers.y && player.x >= numPlayers.x && player.x <= numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)) {
+    //     console.log('this is collision player hit BOTTOM of opponent');
+    // }
+    // if((player.x + player.size) > numPlayers.x && player.x < (numPlayers.x + numPlayers.size && player.y >= numPlayers.y && player.y <= numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size))) {
+    //     console.log('this is collision player hit LEFT of opponent');
+    // }
+
+    // player.x >= numPlayers.x && player.x <= numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)
+
+    //player.y >= numPlayers.y && player.y <= numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size)
+//   function boxCollide(a, b) {
+
+//   var ax2 = a.x + a.w;
+//   var ay2 = a.y + a.h;
+//   var bx2 = b.x + b.w;
+//   var by2 = b.y + b.h;
+
+//   // simple hit true, false
+//   //if (ax2 < b.x || a.x > bx2 || ay2 < b.y || a.y > by2) return false;
+//   // return true
+
+//   var xInRange = (a.x >= b.x && a.x <= bx2 || ax2 >= b.x && ax2 <= bx2);
+//   var yInRange = (a.y >= b.y && a.y <= by2 || ay2 >= b.y && ay2 <= by2);
+//   // Clockwise hit from top 1,2,3,4 or -1
+
+//   if (ay2 > b.y && a.y < by2 && xInRange) return 1; // A hit the top of B
+//   if (a.x < bx2 && ax2 > b.x && yInRange) return 2; // A hit the right of B
+//   if (a.y < by2 && ay2 > b.y && xInRange) return 3; // A hit the bottom of B
+//   if (ax2 > b.x && a.x < bx2 && yInRange) return 4; // A hit the right of B
+//   return -1; // nohit
+// }
+
+
     renderMap();
     stream();
     window.requestAnimationFrame(gameLoop);
@@ -314,40 +428,11 @@ function gameLoop(){
 document.addEventListener("keydown", keyDown);
 document.addEventListener("keyup", keyUp);
 
-function detectWall() {
-    // grav = true;
-    for(var y = 0; y < map_game.length; y++) {
-        for(var x = 0; x < map_game[y].length; x++) {
-            if(map_game[y][x] == 0){
-
-                var tileX = x*tileW;
-                var tileY = y*tileH;
-    
-                if(player.x + player.xVel >= tileX && player.x <= tileX + tileW && player.y + player.yVel >= tileY && player.y <= tileY + tileH){                 
-                    player.yVel = 0;
-                    player.y = tileY - player.yVel;
-                }
-            } else if(map_game[y][x] == 1) {
-                var tileX = x * tileW;
-                grav = true;
-                if((player.xVel + player.x) == tileX) {
-                    console.log('collision')
-                    player.xVel = 0;
-                }
-            }
-        }
-    }
-}
-
-function detectCollision(obj1, obj2) {
-    var box1Right = obj1.x + obj1.width
-    var box1Bottom = obj1.y + obj1.height  
-    var box2Left = obj2.x + obj2.width
-    var box2Bottom = obj2.y + obj2.height  
-    
-    if(box1Right > obj2.x && box2Left > obj1.x && 
-      box1Bottom > obj2.y && box2Bottom > obj1.y) {
-          return true;
-    }
-    return false
+function haveIntersection(r1, r2) {
+    return !(
+        r2.x > r1.x + r1.width ||
+        r2.x + r2.width < r1.x ||
+        r2.y > r1.y + r1.height ||
+        r2.y + r2.height < r1.y
+    );
 }

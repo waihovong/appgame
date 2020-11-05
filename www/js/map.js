@@ -33,6 +33,8 @@ var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
+var platform = [];
+
 player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
 
 canvas = document.getElementById('canvas-2');
@@ -41,23 +43,25 @@ context = canvas.getContext('2d');
 let power_x;
 let power_y;
 
-var tileH = canvas.height % 41;
-var tileW = canvas.width % 41;
+var tileH = 26;
+var tileW = 18;
 
 
 var player =  {
+    id: 0,
     x: 80,
-    y: 40,
+    y: 60,
+    size: 20,
     xVel: 0,
     yVel: 0,
     jump: true,
     height: 20,
     width: 20,
     onGround: true,
-    invincible: false,
-    flight: false
-    
+    speed: true,
+    flight: true
 };
+
 
 var numPlayers = [];
 
@@ -68,7 +72,6 @@ var keypress = {
 };
 
 var gameGravity = 0.5;
-var grav = false;
 var friction = 0.7;
 
 var movement = 0.7;
@@ -79,7 +82,8 @@ var rectY = 0;
 var moveRight = false;
 var moveLeft = false;
 
-var boundry = false;
+var grav = false;
+var floor = false;
 
 var buttonDown = false;
 
@@ -102,6 +106,14 @@ fromEvent(socket,'players').pipe(
         numPlayers = mice;
 });
 
+fromEvent(socket,'newPlayerID').pipe(
+    map((x) => JSON.parse(x))).subscribe(function(playerInit) {
+        if (player.id == 0) {
+            player.id = playerInit;
+            console.log(playerInit);
+        }
+});
+
 
 function init(){
     window.requestAnimationFrame(gameLoop);
@@ -110,7 +122,6 @@ function init(){
 function createPlayer() {
     context.fillStyle = "#FF0000";
     context.fillRect(player.x, player.y, player.width, player.height);
-
 }
 
 function renderMap() {
@@ -123,25 +134,22 @@ function renderMap() {
             if(map_game[x][y] == 2) {
                 context.fillStyle = "#AEF172";
                 context.fillRect(y * 20, x * 20, 20, 20);
+                platform.push(map_game);
             }
         }
     }
 }
 
-function showPower(min, max) {
-    return Math.round(Math.random() * (max - min) / 10) * min;
-}
+console.log(platform);
 
 function generatePowerUp() {
-    power_x = showPower(100, canvas.width / 2);
-    power_y = showPower(100, canvas.height / 2);
-    context.fillStyle = 'blue'
-    context.fillRect(power_x, power_y, 10, 10)
+    // power_x = showPo(50, 250);
+    // power_y = showPower(200, 250);
+    context.fillStyle = 'orange'
+    context.fillRect(100, 370, 20, 20)
 }
 
 function insertPowerUp() {
-    // console.log('inserting power up');
-    
     context.fillStyle = 'blue';
     context.fillRect(power_x, power_y, 10, 10);
 }
@@ -154,10 +162,12 @@ function keyDown(e) {
             break;
         case 38:
             if(grav) {
-                console.log('jump');
+                // player.jump = false;
                 player.yVel = -9;
                 onGround = false;
             }
+            player.jump = false;
+            // console.log('jump', player.jump);
             break;
         case 39:
             console.log('moving right');
@@ -166,11 +176,20 @@ function keyDown(e) {
     }
 }
 
-
-function leftMovement() {
-    buttonDown = true;
-    moveLeft = true;
-    console.log('moving left');
+function keyUp(e) {
+    switch (e.keyCode) {
+        case 37:
+            moveLeft = false;
+            break;
+        case 38:
+            if(player.yVel < -1) {
+                player.yVel  = -2;
+            } 
+            break;
+        case 39:
+            moveRight = false;
+            break;
+    }
 }
 
 var mouseDownR;
@@ -191,11 +210,11 @@ function leftMovement() {
 }
 
 function jumpMovement() {
+    // console.log(player.jump);
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
 function whileMouseDownR() {
-
     player.xVel = 2;
     mouseDownR = requestAnimationFrame(whileMouseDownR);
 }
@@ -203,7 +222,6 @@ function whileMouseDownR() {
 function whileMouseDownL() {
     player.xVel = -2;
     mouseDownL = requestAnimationFrame(whileMouseDownL);
-
 }
 
 function whileMouseDownJ() {
@@ -242,22 +260,6 @@ jumpM.addEventListener('touchstart', jumpMovement);
 jumpM.addEventListener('touchend', stopJump);
 
 
-function keyUp(e) {
-    switch (e.keyCode) {
-        case 37:
-            moveLeft = false;
-            break;
-        case 38:
-            if(player.yVel < -1) {
-                player.yVel  = -1;
-            } 
-            break;
-        case 39:
-            moveRight = false;
-            break;
-    }
-}
-
 var playerPosDisplayX = document.getElementById('posX');
 var playerPosDisplayY = document.getElementById('posY');
 
@@ -268,52 +270,115 @@ var playerSpeedY = document.getElementById('speedY');
 
 function gameLoop(){
 
-    // canvas.height = window.innerHeight;
-    // canvas.width = window.innerWidth;
-
     context.clearRect(0, 0, canvas.width, canvas.height);
-
-    // console.log('number of players in the game', numPlayers.length);
 
     for(var i = 0; i < numPlayers.length; i++) {
         context.fillStyle = player_colors[i];
-        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].width, numPlayers[i].height);
-        // window.requestAnimationFrame(gameLoop);
+        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
+        if (player.id == numPlayers[i].id)
+        {
+            continue;
+        }
+        var playerLocationX = player.x; 
+        var playerLocationY = player.y;
+
+        var opPlayerBoundryX1 = numPlayers[i].x - player.size;
+        var opPlayerBoundryX2 = numPlayers[i].x + numPlayers[i].size;
+
+        var opPlayerBoundryY1 = numPlayers[i].y - player.size;
+        var opPlayerBoundryY2 = numPlayers[i].y + numPlayers[i].size;
+
+        if ((playerLocationX >= opPlayerBoundryX1) && (playerLocationX <= opPlayerBoundryX2) && (playerLocationY >= opPlayerBoundryY1) && (playerLocationY <= opPlayerBoundryY2)) {
+            console.log('collision');
+        }
     }
 
-    if(moveLeft) { player.xVel -= 2; }
+
+
+    // for(var col = 0; col < map_game.length; col++) {
+        // for(var row = 0; row < map_game[col].length; row++) {
+            // if(platform == 2) {
+                // console.log('here here here here');
+            // }
+    //         var playerLocationX = player.x; 
+    //         var playerLocationY = player.y;
+
+    //         var mapPlayerBoundryX1 = map_game[col][row] - player.size;
+    //         var mapPlayerBoundryX2 = map_game[col][row] + map_game[col][row].size;
+
+    //         var mapPlayerBoundryY1 = map_game[col][row] - player.size;
+    //         var mapPlayerBoundryY2 = map_game[col][row] + map_game[col][row].size;
+
+            // if(map_game[col][row] === 2) {
+                // var mapX = row * tileW;
+                // var mapY = col * tileH;
+                // if()
+
+
+    // if(player.x > canvas.width - player.width - 20) { 
+    //     player.x = canvas.width - player.width - 20; 
+    // }
     
-    if(moveRight) { player.xVel += 2; }
+    // if(player.y > canvas.height - player.height - 20) { 
+    //     player.y = canvas.height - player.height - 20; 
+    // }
+                // if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
+                // if(player.y + player.size >= mapY && player.y <= mapY + tileH) {
+
+                // if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
+                    // floor = true;
+                    // grav = true;
+                    // player.yVel = 0;
+                    // player.y = mapY - player.s;
+                // }
+            // }
+        // }
+    // }
+    
+    // if(floor) {
+        if(moveLeft) { 
+            player.xVel -= 2;
+        }
+        if(moveRight) { 
+            player.xVel += 2;
+        }
+    // } else {
+        player.yVel += gameGravity * 0.9;
+    // }
 
     moveLeft = false;
     moveRight = false;
 
     player.x += player.xVel;
     player.y += player.yVel;
-    player.yVel += gameGravity * 0.9;
+    // player.yVel += gameGravity * 0.9;
     player.xVel *= friction;
 
     grav = true;
+    floor = false;
 
     if(player.x <= 20) { player.x = 20; }
 
     if(player.y <= 20) { player.y = 20; }
 
-    if(player.x > canvas.width - player.width - 20) { player.x = canvas.width - player.width - 20; }
+    if(player.x > canvas.width - player.width - 20) { 
+        player.x = canvas.width - player.width - 20; 
+    }
     
-    if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
-
-
-    // for(var col = 0; col < map_game.length; col++) {
-    //     for(var row = 0; row < map_game[col].length; row++) {
-    //         // console.log(map_game[col][row]);
-    //     }
-    // }
-
-
+    if(player.y > canvas.height - player.height - 20) { 
+        player.y = canvas.height - player.height - 20; 
+    }
 
     renderMap();
     stream();
+    // insertPowerUp();
+    if(player.speed) {
+        generatePowerUp();
+    }
+
+    if ((player.x >= 100) && (player.x <= 120) && (player.y >= 370) && (player.y <= 390)) {
+            console.log('collision with speed');
+    }
     window.requestAnimationFrame(gameLoop);
     
 }
@@ -321,40 +386,18 @@ function gameLoop(){
 document.addEventListener("keydown", keyDown);
 document.addEventListener("keyup", keyUp);
 
-function detectWall() {
-    // grav = true;
-    for(var y = 0; y < map_game.length; y++) {
-        for(var x = 0; x < map_game[y].length; x++) {
-            if(map_game[y][x] == 0){
-
-                var tileX = x*tileW;
-                var tileY = y*tileH;
-    
-                if(player.x + player.xVel >= tileX && player.x <= tileX + tileW && player.y + player.yVel >= tileY && player.y <= tileY + tileH){                 
+function checkPlatform(){
+    for(var col = 0; col < map_game.length; col++) {
+        for(var row = 0; row < map_game[col].length; row++) {
+            if(map_game[col][row] === 2) {
+                var mapX = row * tileW;
+                var mapY = col * tileH;
+                if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
+                    floor = true;
                     player.yVel = 0;
-                    player.y = tileY - player.yVel;
-                }
-            } else if(map_game[y][x] == 1) {
-                var tileX = x * tileW;
-                grav = true;
-                if((player.xVel + player.x) == tileX) {
-                    console.log('collision')
-                    player.xVel = 0;
+                    player.y = mapY - player.s;
                 }
             }
         }
     }
-}
-
-function detectCollision(obj1, obj2) {
-    var box1Right = obj1.x + obj1.width
-    var box1Bottom = obj1.y + obj1.height  
-    var box2Left = obj2.x + obj2.width
-    var box2Bottom = obj2.y + obj2.height  
-    
-    if(box1Right > obj2.x && box2Left > obj1.x && 
-      box1Bottom > obj2.y && box2Bottom > obj1.y) {
-          return true;
-    }
-    return false
-}
+}   
