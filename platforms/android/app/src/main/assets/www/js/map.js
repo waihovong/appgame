@@ -33,7 +33,9 @@ var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
+// var platform = [];
+
+player_colors = ["blue", "red", "pink", "yellow", "green", "grey"];
 
 canvas = document.getElementById('canvas-2');
 context = canvas.getContext('2d');
@@ -41,14 +43,14 @@ context = canvas.getContext('2d');
 let power_x;
 let power_y;
 
-var tileH = canvas.height % 41;
-var tileW = canvas.width % 41;
+var tileH = 26;
+var tileW = 18;
 
 
 var player =  {
-    id: null,
+    id: 0,
     x: 80,
-    y: 40,
+    y: 60,
     size: 20,
     xVel: 0,
     yVel: 0,
@@ -56,10 +58,11 @@ var player =  {
     height: 20,
     width: 20,
     onGround: true,
-    invincible: false,
-    flight: false
-    
+    speed: true,
+    flight: true,
+    status: true
 };
+
 
 var numPlayers = [];
 
@@ -70,7 +73,6 @@ var keypress = {
 };
 
 var gameGravity = 0.5;
-var grav = false;
 var friction = 0.7;
 
 var movement = 0.7;
@@ -81,7 +83,8 @@ var rectY = 0;
 var moveRight = false;
 var moveLeft = false;
 
-var boundry = false;
+var grav = false;
+var floor = false;
 
 var buttonDown = false;
 
@@ -102,13 +105,14 @@ function stream() {
 fromEvent(socket,'players').pipe(
     map((x) => JSON.parse(x))).subscribe(function(mice) {
         numPlayers = mice;
-        // console.log (numPlayers);
 });
 
 fromEvent(socket,'newPlayerID').pipe(
     map((x) => JSON.parse(x))).subscribe(function(playerInit) {
-        player.id = playerInit;
-        console.log(playerInit);
+        if (player.id == 0) {
+            player.id = playerInit;
+            console.log(playerInit);
+        }
 });
 
 
@@ -119,7 +123,6 @@ function init(){
 function createPlayer() {
     context.fillStyle = "#FF0000";
     context.fillRect(player.x, player.y, player.width, player.height);
-
 }
 
 function renderMap() {
@@ -137,20 +140,12 @@ function renderMap() {
     }
 }
 
-function showPower(min, max) {
-    return Math.round(Math.random() * (max - min) / 10) * min;
-}
-
 function generatePowerUp() {
-    power_x = showPower(100, canvas.width / 2);
-    power_y = showPower(100, canvas.height / 2);
-    context.fillStyle = 'blue'
-    context.fillRect(power_x, power_y, 10, 10)
+    context.fillStyle = 'orange'
+    context.fillRect(100, 370, 20, 20)
 }
 
 function insertPowerUp() {
-    // console.log('inserting power up');
-    
     context.fillStyle = 'blue';
     context.fillRect(power_x, power_y, 10, 10);
 }
@@ -163,10 +158,12 @@ function keyDown(e) {
             break;
         case 38:
             if(grav) {
-                console.log('jump');
-                player.yVel = -9;
+                // player.jump = false;
+                player.yVel = -18;
                 onGround = false;
             }
+            player.jump = false;
+            console.log('jump', player.jump);
             break;
         case 39:
             console.log('moving right');
@@ -175,11 +172,20 @@ function keyDown(e) {
     }
 }
 
-
-function leftMovement() {
-    buttonDown = true;
-    moveLeft = true;
-    console.log('moving left');
+function keyUp(e) {
+    switch (e.keyCode) {
+        case 37:
+            moveLeft = false;
+            break;
+        case 38:
+            if(player.yVel < -1) {
+                player.yVel  = -2;
+            } 
+            break;
+        case 39:
+            moveRight = false;
+            break;
+    }
 }
 
 var mouseDownR;
@@ -200,11 +206,11 @@ function leftMovement() {
 }
 
 function jumpMovement() {
+    // console.log(player.jump);
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
 function whileMouseDownR() {
-
     player.xVel = 2;
     mouseDownR = requestAnimationFrame(whileMouseDownR);
 }
@@ -212,11 +218,10 @@ function whileMouseDownR() {
 function whileMouseDownL() {
     player.xVel = -2;
     mouseDownL = requestAnimationFrame(whileMouseDownL);
-
 }
 
 function whileMouseDownJ() {
-    player.yVel = -5;
+    player.yVel = -16;
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
@@ -251,22 +256,6 @@ jumpM.addEventListener('touchstart', jumpMovement);
 jumpM.addEventListener('touchend', stopJump);
 
 
-function keyUp(e) {
-    switch (e.keyCode) {
-        case 37:
-            moveLeft = false;
-            break;
-        case 38:
-            if(player.yVel < -1) {
-                player.yVel  = -1;
-            } 
-            break;
-        case 39:
-            moveRight = false;
-            break;
-    }
-}
-
 var playerPosDisplayX = document.getElementById('posX');
 var playerPosDisplayY = document.getElementById('posY');
 
@@ -277,56 +266,15 @@ var playerSpeedY = document.getElementById('speedY');
 
 function gameLoop(){
 
-    // canvas.height = window.innerHeight;
-    // canvas.width = window.innerWidth;
-
     context.clearRect(0, 0, canvas.width, canvas.height);
-
-    // console.log('number of players in the game', numPlayers.length);
 
     for(var i = 0; i < numPlayers.length; i++) {
         context.fillStyle = player_colors[i];
         context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
-        //   var ax2 = a.x + a.w;
-//   var ay2 = a.y + a.h;
-//   var bx2 = b.x + b.w;
-//   var by2 = b.y + b.h;
-
-//   var xInRange = (a.x >= b.x && a.x <= bx2 || ax2 >= b.x && ax2 <= bx2);
-//   var yInRange = (a.y >= b.y && a.y <= by2 || ay2 >= b.y && ay2 <= by2);
-//   // Clockwise hit from top 1,2,3,4 or -1
-
-//   if (ay2 > b.y && a.y < by2 && xInRange) return 1; // A hit the top of B
-//   if (a.x < bx2 && ax2 > b.x && yInRange) return 2; // A hit the right of B
-//   if (a.y < by2 && ay2 > b.y && xInRange) return 3; // A hit the bottom of B
-//   if (ax2 > b.x && a.x < bx2 && yInRange) return 4; // A hit the right of B
-//   return -1; // nohit
-// }
-    }
-
-
-
-for(var i = 0; i < numPlayers.length; i++) {
-
-        // // window.requestAnimationFrame(gameLoop);
-        // if ((player.y + player.size) > numPlayers[i].x && player.y < (numPlayers[i].y + numPlayers[i].size) && player.x >= numPlayers[i].x && player.x <= (numPlayers[i].x + numPlayers[i].size || (player.x + player.size) >= numPlayers[i].x && (player.x + player.size) <= (numPlayers[i].x + numPlayers[i].size)) ) {
-        //     console.log('hello this is a collision player hit TOP of opponent');
-        // }
-        // if(player.x < (numPlayers[i].x + numPlayers[i].size) && (player.x + player.size) > numPlayers[i].x && player.y >= numPlayers[i].y && player.y <= (numPlayers[i].y + numPlayers[i].size || (player.y + player.size) >= numPlayers[i].y && (player.y + player.size) <= (numPlayers[i].y + numPlayers[i].size)) ) {
-        //     console.log('this is collision player hit RIGHT of opponent');
-        // }
-        // if(player.y < (numPlayers[i].y + numPlayers[i].size) && player.y + player.size > numPlayers[i].y && player.x >= numPlayers[i].x && player.x <= numPlayers[i].x + numPlayers[i].size || (player.x + player.size) >= numPlayers[i].x && (player.x + player.size) <= (numPlayers[i].x + numPlayers[i].size)) {
-        //     console.log('this is collision player hit BOTTOM of opponent');
-        // }
-        // if((player.x + player.size) > numPlayers[i].x && player.x < (numPlayers[i].x + numPlayers[i].size && player.y >= numPlayers[i].y && player.y <= numPlayers[i].y + numPlayers[i].size || (player.y + player.size) >= numPlayers[i].y && (player.y + player.size) <= (numPlayers[i].y + numPlayers[i].size))) {
-        //     console.log('this is collision player hit LEFT of opponent');
-        // }
-
         if (player.id == numPlayers[i].id)
         {
             continue;
         }
-
         var playerLocationX = player.x; 
         var playerLocationY = player.y;
 
@@ -336,91 +284,99 @@ for(var i = 0; i < numPlayers.length; i++) {
         var opPlayerBoundryY1 = numPlayers[i].y - player.size;
         var opPlayerBoundryY2 = numPlayers[i].y + numPlayers[i].size;
 
-            // console.log(playerLocationX, playerLocationY, numPlayers[i].x, numPlayers[i].y);
-        if ((playerLocationX >= opPlayerBoundryX1) && (playerLocationX <= opPlayerBoundryX2) && (playerLocationY >= opPlayerBoundryY1) && (playerLocationY <= opPlayerBoundryY2)) {
-            // console.log("collision: ", playerLocationX, playerLocationY, opPlayerBoundryX1, opPlayerBoundryX2, opPlayerBoundryY1, opPlayerBoundryY2);
+        if ((playerLocationX >= opPlayerBoundryX1) && 
+        (playerLocationX <= opPlayerBoundryX2) && 
+        (playerLocationY >= opPlayerBoundryY1) && 
+        (playerLocationY <= opPlayerBoundryY2)) {
+            // console.log('collision');
         }
-}
+    }
+
+    // for(var col = 0; col < map_game.length; col++) {
+        // for(var row = 0; row < map_game[col].length; row++) {
+            // if(platform == 2) {
+                // console.log('here here here here');
+            // }
+    //         var playerLocationX = player.x; 
+    //         var playerLocationY = player.y;
+
+    //         var mapPlayerBoundryX1 = map_game[col][row] - player.size;
+    //         var mapPlayerBoundryX2 = map_game[col][row] + map_game[col][row].size;
+
+    //         var mapPlayerBoundryY1 = map_game[col][row] - player.size;
+    //         var mapPlayerBoundryY2 = map_game[col][row] + map_game[col][row].size;
+
+            // if(map_game[col][row] === 2) {
+                // var mapX = row * tileW;
+                // var mapY = col * tileH;
+                // if()
 
 
-
-    if(moveLeft) { player.xVel -= 2; }
+    // if(player.x > canvas.width - player.width - 20) { 
+    //     player.x = canvas.width - player.width - 20; 
+    // }
     
-    if(moveRight) { player.xVel += 2; }
+    // if(player.y > canvas.height - player.height - 20) { 
+    //     player.y = canvas.height - player.height - 20; 
+    // }
+                // if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
+                // if(player.y + player.size >= mapY && player.y <= mapY + tileH) {
+
+                // if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
+                    // floor = true;
+                    // grav = true;
+                    // player.yVel = 0;
+                    // player.y = mapY - player.s;
+                // }
+            // }
+        // }
+    // }
+    
+    // if(floor) {
+        if(moveLeft) { 
+            player.xVel -= 2;
+        }
+        if(moveRight) { 
+            player.xVel += 2;
+        }
+    // } else {
+        player.yVel += gameGravity * 0.7;
+    // }
 
     moveLeft = false;
     moveRight = false;
 
     player.x += player.xVel;
     player.y += player.yVel;
-    player.yVel += gameGravity * 0.9;
+    // player.yVel += gameGravity * 0.9;
     player.xVel *= friction;
 
     grav = true;
+    floor = false;
 
     if(player.x <= 20) { player.x = 20; }
 
     if(player.y <= 20) { player.y = 20; }
 
-    if(player.x > canvas.width - player.width - 20) { player.x = canvas.width - player.width - 20; }
+    if(player.x > canvas.width - player.width - 20) { 
+        player.x = canvas.width - player.width - 20; 
+    }
     
-    if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
-
-
-    // for(var col = 0; col < map_game.length; col++) {
-    //     for(var row = 0; row < map_game[col].length; row++) {
-    //         // console.log(map_game[col][row]);
-    //     }
-    // }
-    // var topLeft = player.size;
-    // var topRight;
-    // var bottomLeft;
-    // var bottomRight;
-
-    // player = a
-    // numPlayers = b
-
-    // if ((player.y + player.size) && player.y < (numPlayers.y + numPlayers.size) && player.x >= numPlayers.x && player.x <= (numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)) ) {
-    //     console.log('hello this is a collision player hit TOP of opponent');
-    // }
-    // if(player.x < (numPlayers.x + numPlayers) && (player.x + player.size) > numPlayers.x && player.y >= numPlayers.y && player.y <= (numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size)) ) {
-    //     console.log('this is collision player hit RIGHT of opponent');
-    // }
-    // if(player.y < (numPlayers.y + numPlayers.size) && player.y + player.size > numPlayers.y && player.x >= numPlayers.x && player.x <= numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)) {
-    //     console.log('this is collision player hit BOTTOM of opponent');
-    // }
-    // if((player.x + player.size) > numPlayers.x && player.x < (numPlayers.x + numPlayers.size && player.y >= numPlayers.y && player.y <= numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size))) {
-    //     console.log('this is collision player hit LEFT of opponent');
-    // }
-
-    // player.x >= numPlayers.x && player.x <= numPlayers.x + numPlayers.size || (player.x + player.size) >= numPlayers.x && (player.x + player.size) <= (numPlayers.x + numPlayers.size)
-
-    //player.y >= numPlayers.y && player.y <= numPlayers.y + numPlayers.size || (player.y + player.size) >= numPlayers.y && (player.y + player.size) <= (numPlayers.y + numPlayers.size)
-//   function boxCollide(a, b) {
-
-//   var ax2 = a.x + a.w;
-//   var ay2 = a.y + a.h;
-//   var bx2 = b.x + b.w;
-//   var by2 = b.y + b.h;
-
-//   // simple hit true, false
-//   //if (ax2 < b.x || a.x > bx2 || ay2 < b.y || a.y > by2) return false;
-//   // return true
-
-//   var xInRange = (a.x >= b.x && a.x <= bx2 || ax2 >= b.x && ax2 <= bx2);
-//   var yInRange = (a.y >= b.y && a.y <= by2 || ay2 >= b.y && ay2 <= by2);
-//   // Clockwise hit from top 1,2,3,4 or -1
-
-//   if (ay2 > b.y && a.y < by2 && xInRange) return 1; // A hit the top of B
-//   if (a.x < bx2 && ax2 > b.x && yInRange) return 2; // A hit the right of B
-//   if (a.y < by2 && ay2 > b.y && xInRange) return 3; // A hit the bottom of B
-//   if (ax2 > b.x && a.x < bx2 && yInRange) return 4; // A hit the right of B
-//   return -1; // nohit
-// }
-
+    if(player.y > canvas.height - player.height - 20) { 
+        player.y = canvas.height - player.height - 20; 
+    }
 
     renderMap();
     stream();
+    // insertPowerUp();
+    if(player.speed) {
+        generatePowerUp();
+    }
+
+    if ((player.x >= 100) && (player.x <= 120) && (player.y >= 370) && (player.y <= 390)) {
+            console.log('collision');
+    }
+
     window.requestAnimationFrame(gameLoop);
     
 }
@@ -428,11 +384,18 @@ for(var i = 0; i < numPlayers.length; i++) {
 document.addEventListener("keydown", keyDown);
 document.addEventListener("keyup", keyUp);
 
-function haveIntersection(r1, r2) {
-    return !(
-        r2.x > r1.x + r1.width ||
-        r2.x + r2.width < r1.x ||
-        r2.y > r1.y + r1.height ||
-        r2.y + r2.height < r1.y
-    );
+function checkPlatform(){
+    for(var col = 0; col < map_game.length; col++) {
+        for(var row = 0; row < map_game[col].length; row++) {
+            if(map_game[col][row] === 2) {
+                var mapX = row * tileW;
+                var mapY = col * tileH;
+                if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
+                    floor = true;
+                    player.yVel = 0;
+                    player.y = mapY - player.s;
+                }
+            }
+        }
+    }
 }

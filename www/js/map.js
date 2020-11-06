@@ -3,10 +3,14 @@ const { map, auditTime } = rxjs.operators;
 
 let canvas;
 let context;
+let powerups = [];
 
 var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,2,0,0,0,0,0,0,0,0,2,2,2,0,1],
+    [1,0,0,2,2,2,0,0,0,0,2,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -25,9 +29,6 @@ var map_game = [
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -35,7 +36,7 @@ var map_game = [
 
 // var platform = [];
 
-player_colors = ["blue", "red", "pink", "yellow", "green", "grey"]
+player_colors = ["blue", "red", "pink", "yellow", "green", "grey"];
 
 canvas = document.getElementById('canvas-2');
 context = canvas.getContext('2d');
@@ -49,7 +50,7 @@ var tileW = 18;
 
 var player =  {
     id: 0,
-    x: 80,
+    x: 140,
     y: 60,
     size: 20,
     xVel: 0,
@@ -59,7 +60,8 @@ var player =  {
     width: 20,
     onGround: true,
     speed: true,
-    flight: true
+    flight: true,
+    status: "runner",
 };
 
 
@@ -95,7 +97,6 @@ function stream() {
     if(socket.connected) {
         const playerObservable = of(player);
         playerObservable.subscribe(function(playerObj) {
-            // console.log(playerObj);
             socket.emit('playerObject', JSON.stringify(playerObj));
         });
     }
@@ -106,10 +107,16 @@ fromEvent(socket,'players').pipe(
         numPlayers = mice;
 });
 
+fromEvent(socket,'powerUps').pipe(
+    map((x) => JSON.parse(x))).subscribe(function(mice) {
+        powerups = mice;
+});
+
 fromEvent(socket,'newPlayerID').pipe(
     map((x) => JSON.parse(x))).subscribe(function(playerInit) {
         if (player.id == 0) {
-            player.id = playerInit;
+            player.id = playerInit.id;
+            player.status = playerInit.status;
             console.log(playerInit);
         }
 });
@@ -132,22 +139,27 @@ function renderMap() {
                 context.fillRect(y * 20, x * 20, 20, 20);
             }
             if(map_game[x][y] == 2) {
-                context.fillStyle = "#AEF172";
+                context.fillStyle = "#F0F0F0";
                 context.fillRect(y * 20, x * 20, 20, 20);
             }
         }
     }
 }
 
-function generatePowerUp() {
+function generatePowerUpSpeed(obj) {
     context.fillStyle = 'orange'
-    context.fillRect(100, 370, 20, 20)
+    if (obj.visible) {
+        context.fillRect(obj.x, obj.y, obj.size, obj.size)
+    }
 }
 
-function insertPowerUp() {
-    context.fillStyle = 'blue';
-    context.fillRect(power_x, power_y, 10, 10);
+function generatePowerUpFlight(obj) {
+    context.fillStyle = 'purple'
+    if (obj.visible) {
+        context.fillRect(obj.x, obj.y, obj.size, obj.size)
+    }
 }
+
 
 function keyDown(e) {
     switch(e.keyCode) {
@@ -158,7 +170,7 @@ function keyDown(e) {
         case 38:
             if(grav) {
                 // player.jump = false;
-                player.yVel = -9;
+                player.yVel = -18;
                 onGround = false;
             }
             player.jump = false;
@@ -195,7 +207,6 @@ var rightM = document.getElementById('rightMovement');
 var leftM = document.getElementById('leftMovement');
 var jumpM = document.getElementById('jumpMovement');
 
-
 function rightMovement() {
     mouseDownR = requestAnimationFrame(whileMouseDownR);
 }
@@ -205,22 +216,34 @@ function leftMovement() {
 }
 
 function jumpMovement() {
-    // console.log(player.jump);
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
 function whileMouseDownR() {
-    player.xVel = 2;
+    if(player.speed == false) {
+        player.xVel = 4;
+    } else if(player.speed == true) {
+        player.xVel = 2
+    }
     mouseDownR = requestAnimationFrame(whileMouseDownR);
 }
 
 function whileMouseDownL() {
-    player.xVel = -2;
+    if(player.speed == false) {
+        player.xVel = -4;
+    } else if (player.speed == true) {
+        player.xVel = -2;
+    }
     mouseDownL = requestAnimationFrame(whileMouseDownL);
 }
 
 function whileMouseDownJ() {
-    player.yVel = -5;
+    console.log(player)
+    if(player.flight == false) {
+        player.yVel = -4;
+    } else if(player.flight == true) {
+        player.yVel = -15;
+    }
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
@@ -274,79 +297,23 @@ function gameLoop(){
         {
             continue;
         }
-        var playerLocationX = player.x; 
-        var playerLocationY = player.y;
-
-        var opPlayerBoundryX1 = numPlayers[i].x - player.size;
-        var opPlayerBoundryX2 = numPlayers[i].x + numPlayers[i].size;
-
-        var opPlayerBoundryY1 = numPlayers[i].y - player.size;
-        var opPlayerBoundryY2 = numPlayers[i].y + numPlayers[i].size;
-
-        if ((playerLocationX >= opPlayerBoundryX1) && (playerLocationX <= opPlayerBoundryX2) && (playerLocationY >= opPlayerBoundryY1) && (playerLocationY <= opPlayerBoundryY2)) {
-            console.log('collision');
-        }
     }
 
+    if(moveLeft) { 
+        player.xVel -= 2;
+    }
+    if(moveRight) { 
+        player.xVel += 2;
+    }
 
-
-    // for(var col = 0; col < map_game.length; col++) {
-        // for(var row = 0; row < map_game[col].length; row++) {
-            // if(platform == 2) {
-                // console.log('here here here here');
-            // }
-    //         var playerLocationX = player.x; 
-    //         var playerLocationY = player.y;
-
-    //         var mapPlayerBoundryX1 = map_game[col][row] - player.size;
-    //         var mapPlayerBoundryX2 = map_game[col][row] + map_game[col][row].size;
-
-    //         var mapPlayerBoundryY1 = map_game[col][row] - player.size;
-    //         var mapPlayerBoundryY2 = map_game[col][row] + map_game[col][row].size;
-
-            // if(map_game[col][row] === 2) {
-                // var mapX = row * tileW;
-                // var mapY = col * tileH;
-                // if()
-
-
-    // if(player.x > canvas.width - player.width - 20) { 
-    //     player.x = canvas.width - player.width - 20; 
-    // }
-    
-    // if(player.y > canvas.height - player.height - 20) { 
-    //     player.y = canvas.height - player.height - 20; 
-    // }
-                // if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
-                // if(player.y + player.size >= mapY && player.y <= mapY + tileH) {
-
-                // if(player.y > canvas.height - player.height - 20) { player.y = canvas.height - player.height - 20; }
-                    // floor = true;
-                    // grav = true;
-                    // player.yVel = 0;
-                    // player.y = mapY - player.s;
-                // }
-            // }
-        // }
-    // }
-    
-    // if(floor) {
-        if(moveLeft) { 
-            player.xVel -= 2;
-        }
-        if(moveRight) { 
-            player.xVel += 2;
-        }
-    // } else {
-        player.yVel += gameGravity * 0.9;
-    // }
+    player.yVel += gameGravity * 0.7;
 
     moveLeft = false;
     moveRight = false;
 
     player.x += player.xVel;
     player.y += player.yVel;
-    // player.yVel += gameGravity * 0.9;
+
     player.xVel *= friction;
 
     grav = true;
@@ -366,34 +333,14 @@ function gameLoop(){
 
     renderMap();
     stream();
-    // insertPowerUp();
-    if(player.speed) {
-        generatePowerUp();
-    }
 
-    if ((player.x >= 100) && (player.x <= 120) && (player.y >= 370) && (player.y <= 390)) {
-            console.log('collision');
+    if (powerups.length == 2) {
+        generatePowerUpSpeed(powerups[0]);
+        generatePowerUpFlight(powerups[1]);
     }
 
     window.requestAnimationFrame(gameLoop);
-    
 }
 
 document.addEventListener("keydown", keyDown);
 document.addEventListener("keyup", keyUp);
-
-function checkPlatform(){
-    for(var col = 0; col < map_game.length; col++) {
-        for(var row = 0; row < map_game[col].length; row++) {
-            if(map_game[col][row] === 2) {
-                var mapX = row * tileW;
-                var mapY = col * tileH;
-                if(player.x + player.size >= mapX && player.x <= mapX + tileW && player.y + player.size >= mapY && player.y <= mapY + tileH) {
-                    floor = true;
-                    player.yVel = 0;
-                    player.y = mapY - player.s;
-                }
-            }
-        }
-    }
-}
