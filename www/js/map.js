@@ -4,7 +4,7 @@ const { map, auditTime } = rxjs.operators;
 let canvas;
 let context;
 let powerups = [];
-
+//map design layout 1 being the walls and 2 being sprite clouds
 var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -47,7 +47,7 @@ let power_y;
 var tileH = 26;
 var tileW = 18;
 
-
+//player object with states for the gameplay
 var player =  {
     id: 0,
     x: 140,
@@ -58,7 +58,7 @@ var player =  {
     jump: true,
     height: 20,
     width: 20,
-    onGround: true,
+    alive: true,
     speed: true,
     flight: true,
     status: "runner",
@@ -231,19 +231,21 @@ function jumpMovement() {
 }
 
 function whileMouseDownR() {
+    console.log('down RIGHT');
     if(player.speed == false) {
-        player.xVel = 4;
+        player.xVel = 2;
     } else if(player.speed == true) {
-        player.xVel = 2
+        player.xVel = 4;
     }
     mouseDownR = requestAnimationFrame(whileMouseDownR);
 }
 
 function whileMouseDownL() {
+    console.log('down LEFT');
     if(player.speed == false) {
-        player.xVel = -4;
-    } else if (player.speed == true) {
         player.xVel = -2;
+    } else if (player.speed == true) {
+        player.xVel = -4;
     }
     mouseDownL = requestAnimationFrame(whileMouseDownL);
 }
@@ -257,6 +259,8 @@ function whileMouseDownJ() {
     }
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
+
+//stop movement when touch screen no longer in use
 
 function stopRight(){
     cancelAnimationFrame(mouseDownR);
@@ -288,14 +292,6 @@ jumpM.addEventListener('mouseup', stopJump);
 jumpM.addEventListener('touchstart', jumpMovement);
 jumpM.addEventListener('touchend', stopJump);
 
-
-// var playerPosDisplayX = document.getElementById('posX');
-// var playerPosDisplayY = document.getElementById('posY');
-
-// var playerSpeedX = document.getElementById('speedX');
-// var playerSpeedY = document.getElementById('speedY');
-
-
 function gameLoop(){
 
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -303,14 +299,19 @@ function gameLoop(){
     //create dummy players for the server to generate
     //the updates when the clients moves to the server
 
-    for(var i = 0; i < numPlayers.length; i++) {
-        context.fillStyle = player_colors[i];
-        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
-        if (player.id == numPlayers[i].id)
-        {
-            continue;
+    if(player.alive == true) {
+        for(var i = 0; i < numPlayers.length; i++) {
+            context.fillStyle = player_colors[i];
+            context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
+            if (player.id == numPlayers[i].id)
+            {
+                continue;
+            }
         }
+    } else if(player.alive == false) {
+        console.log('dead dead dead');
     }
+
 
     if(moveLeft) { 
         player.xVel -= 2;
