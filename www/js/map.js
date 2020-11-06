@@ -93,6 +93,8 @@ window.onload = init;
 
 var socket = io.connect('http://' +window.localStorage.getItem("ip") + ':3000');
 
+//stream to server
+
 function stream() {
     if(socket.connected) {
         const playerObservable = of(player);
@@ -105,6 +107,11 @@ function stream() {
 fromEvent(socket,'players').pipe(
     map((x) => JSON.parse(x))).subscribe(function(mice) {
         numPlayers = mice;
+        for (let i=0; i<numPlayers.length; i++) {
+            if (numPlayers[i].id == player.id) {
+                player = numPlayers[i];
+            }
+        }
 });
 
 fromEvent(socket,'powerUps').pipe(
@@ -145,6 +152,8 @@ function renderMap() {
         }
     }
 }
+
+//creating power ups for players
 
 function generatePowerUpSpeed(obj) {
     context.fillStyle = 'orange'
@@ -206,6 +215,8 @@ var mouseDownJ;
 var rightM = document.getElementById('rightMovement');
 var leftM = document.getElementById('leftMovement');
 var jumpM = document.getElementById('jumpMovement');
+
+//movements for buttons for android devices
 
 function rightMovement() {
     mouseDownR = requestAnimationFrame(whileMouseDownR);
@@ -278,17 +289,19 @@ jumpM.addEventListener('touchstart', jumpMovement);
 jumpM.addEventListener('touchend', stopJump);
 
 
-var playerPosDisplayX = document.getElementById('posX');
-var playerPosDisplayY = document.getElementById('posY');
+// var playerPosDisplayX = document.getElementById('posX');
+// var playerPosDisplayY = document.getElementById('posY');
 
-var playerSpeedX = document.getElementById('speedX');
-var playerSpeedY = document.getElementById('speedY');
-
+// var playerSpeedX = document.getElementById('speedX');
+// var playerSpeedY = document.getElementById('speedY');
 
 
 function gameLoop(){
 
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    //create dummy players for the server to generate
+    //the updates when the clients moves to the server
 
     for(var i = 0; i < numPlayers.length; i++) {
         context.fillStyle = player_colors[i];
@@ -318,6 +331,8 @@ function gameLoop(){
 
     grav = true;
     floor = false;
+    
+    //canvas collision detection make players not move past borders
 
     if(player.x <= 20) { player.x = 20; }
 
