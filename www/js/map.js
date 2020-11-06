@@ -50,7 +50,7 @@ var tileW = 18;
 //player object with states for the gameplay
 var player =  {
     id: 0,
-    x: 140,
+    x: 160,
     y: 60,
     size: 20,
     xVel: 0,
@@ -231,7 +231,6 @@ function jumpMovement() {
 }
 
 function whileMouseDownR() {
-    console.log('down RIGHT');
     if(player.speed == false) {
         player.xVel = 2;
     } else if(player.speed == true) {
@@ -241,7 +240,6 @@ function whileMouseDownR() {
 }
 
 function whileMouseDownL() {
-    console.log('down LEFT');
     if(player.speed == false) {
         player.xVel = -2;
     } else if (player.speed == true) {
@@ -299,18 +297,13 @@ function gameLoop(){
     //create dummy players for the server to generate
     //the updates when the clients moves to the server
 
-    if(player.alive == true) {
-        for(var i = 0; i < numPlayers.length; i++) {
+    for(var i = 0; i < numPlayers.length; i++) {
+        if(numPlayers[i].alive == true) {
             context.fillStyle = player_colors[i];
             context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
-            if (player.id == numPlayers[i].id)
-            {
-                continue;
-            }
         }
-    } else if(player.alive == false) {
-        console.log('dead dead dead');
     }
+
 
 
     if(moveLeft) { 
