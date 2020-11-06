@@ -4,7 +4,7 @@ const { map, auditTime } = rxjs.operators;
 let canvas;
 let context;
 let powerups = [];
-
+//map design layout 1 being the walls and 2 being sprite clouds
 var map_game = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -47,10 +47,10 @@ let power_y;
 var tileH = 26;
 var tileW = 18;
 
-
+//player object with states for the gameplay
 var player =  {
     id: 0,
-    x: 140,
+    x: 160,
     y: 60,
     size: 20,
     xVel: 0,
@@ -58,7 +58,7 @@ var player =  {
     jump: true,
     height: 20,
     width: 20,
-    onGround: true,
+    alive: true,
     speed: true,
     flight: true,
     status: "runner",
@@ -124,7 +124,7 @@ fromEvent(socket,'newPlayerID').pipe(
         if (player.id == 0) {
             player.id = playerInit.id;
             player.status = playerInit.status;
-            console.log(playerInit);
+            // console.log(playerInit);
         }
 });
 
@@ -173,7 +173,7 @@ function generatePowerUpFlight(obj) {
 function keyDown(e) {
     switch(e.keyCode) {
         case 37:
-            console.log('moving left');
+            // console.log('moving left');
             moveLeft = true;
             break;
         case 38:
@@ -183,10 +183,10 @@ function keyDown(e) {
                 onGround = false;
             }
             player.jump = false;
-            console.log('jump', player.jump);
+            // console.log('jump', player.jump);
             break;
         case 39:
-            console.log('moving right');
+            // console.log('moving right');
             moveRight = true;
             break;
     }
@@ -231,7 +231,6 @@ function jumpMovement() {
 }
 
 function whileMouseDownR() {
-    console.log('down RIGHT');
     if(player.speed == false) {
         player.xVel = 2;
     } else if(player.speed == true) {
@@ -241,7 +240,6 @@ function whileMouseDownR() {
 }
 
 function whileMouseDownL() {
-    console.log('down LEFT');
     if(player.speed == false) {
         player.xVel = -2;
     } else if (player.speed == true) {
@@ -251,7 +249,7 @@ function whileMouseDownL() {
 }
 
 function whileMouseDownJ() {
-    console.log(player)
+    // console.log(player)
     if(player.flight == false) {
         player.yVel = -4;
     } else if(player.flight == true) {
@@ -260,18 +258,17 @@ function whileMouseDownJ() {
     mouseDownJ = requestAnimationFrame(whileMouseDownJ);
 }
 
+//stop movement when touch screen no longer in use
+
 function stopRight(){
-    console.log('stop right');
     cancelAnimationFrame(mouseDownR);
 }
 
 function stopLeft() {
-    console.log('stop left');
     cancelAnimationFrame(mouseDownL);
 }
 
 function stopJump() {
-    console.log('stop right');
     cancelAnimationFrame(mouseDownJ);
 }
 
@@ -301,13 +298,13 @@ function gameLoop(){
     //the updates when the clients moves to the server
 
     for(var i = 0; i < numPlayers.length; i++) {
-        context.fillStyle = player_colors[i];
-        context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
-        if (player.id == numPlayers[i].id)
-        {
-            continue;
+        if(numPlayers[i].alive == true) {
+            context.fillStyle = player_colors[i];
+            context.fillRect(numPlayers[i].x, numPlayers[i].y, numPlayers[i].size, numPlayers[i].size);
         }
     }
+
+
 
     if(moveLeft) { 
         player.xVel -= 2;

@@ -124,7 +124,7 @@ fromEvent(socket,'newPlayerID').pipe(
         if (player.id == 0) {
             player.id = playerInit.id;
             player.status = playerInit.status;
-            console.log(playerInit);
+            // console.log(playerInit);
         }
 });
 
@@ -173,7 +173,7 @@ function generatePowerUpFlight(obj) {
 function keyDown(e) {
     switch(e.keyCode) {
         case 37:
-            console.log('moving left');
+            // console.log('moving left');
             moveLeft = true;
             break;
         case 38:
@@ -183,10 +183,10 @@ function keyDown(e) {
                 onGround = false;
             }
             player.jump = false;
-            console.log('jump', player.jump);
+            // console.log('jump', player.jump);
             break;
         case 39:
-            console.log('moving right');
+            // console.log('moving right');
             moveRight = true;
             break;
     }
@@ -249,7 +249,7 @@ function whileMouseDownL() {
 }
 
 function whileMouseDownJ() {
-    console.log(player)
+    // console.log(player)
     if(player.flight == false) {
         player.yVel = -4;
     } else if(player.flight == true) {
